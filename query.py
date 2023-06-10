@@ -14,11 +14,14 @@ cache = RedisLRU(client)
 def time_it(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        print(f"Function {func.__name__} started")
         start = time.time()
         results = func(*args, **kwargs)
         finish = time.time()
-        print(f"Function {func.__name__} executed in {finish - start:.4f} seconds.")
+        Dt = finish - start
+        if Dt <= 0.001:
+            print("Data received from cache")
+        else:
+            print("Data received from database")
         return results
 
     return wrapper
