@@ -68,65 +68,67 @@ def get_all_tags():
     return tags
 
 
+def build_table(quotes):
+    table = PrettyTable(["Author", "Quote", "Tags"])
+    table._max_width = {"Quote": 40}
+    table.align["Quote"] = "l"
+
+    for quote in quotes:
+        table.add_row([quote.author.fullname, quote.quote, ", ".join(quote.tags)])
+    return table
+
+
 if __name__ == "__main__":
     get_database()
 
     while True:
         command = input(">>> ")
 
-        if command == "name list":
-            author_names = get_author_names()
-            print("Список імен авторів:")
-            for i, name in enumerate(author_names):
-                print(f"{i+1}. {name}")
+        match command:
+            case "":
+                continue
 
-        elif command == "tags":
-            tags = get_all_tags()
-            print("Список всіх тегів:")
-            for i, tag in enumerate(tags):
-                print(f"{i+1}. {tag}")
+            case "name list":
+                author_names = get_author_names()
+                print("Список імен авторів:")
+                for i, name in enumerate(author_names):
+                    print(f"{i+1}. {name}")
 
-        elif command.startswith("name:"):
-            author_name = command.split("name:")[1].strip()
-            quotes = search_quotes_by_author(author_name)
-            table = PrettyTable(["Author", "Quote", "Tags"])
-            if quotes:
-                for quote in quotes:
-                    table.add_row(
-                        [quote.author.fullname, quote.quote, ", ".join(quote.tags)]
-                    )
-                print(table)
-            else:
-                print("Цитати для заданого імені автора не знайдено.")
+            case "tags":
+                tags = get_all_tags()
+                print("Список всіх тегів:")
+                for i, tag in enumerate(tags):
+                    print(f"{i+1}. {tag}")
 
-        elif command.startswith("tag:"):
-            tag = command.split("tag:")[1].strip()
-            quotes = search_quotes_by_tag(tag)
-            table = PrettyTable(["Author", "Quote", "Tags"])
-            if quotes:
-                for quote in quotes:
-                    table.add_row(
-                        [quote.author.fullname, quote.quote, ", ".join(quote.tags)]
-                    )
-                print(table)
-            else:
-                print("Цитати для заданого тегу не знайдено.")
+            case cmd if cmd.startswith("name:"):
+                author_name = command.split("name:")[1].strip()
+                quotes = search_quotes_by_author(author_name)
+                if quotes:
+                    table = build_table(quotes)
+                    print(table)
+                else:
+                    print("Цитати для заданого імені автора не знайдено.")
 
-        elif command.startswith("tags:"):
-            tags = command.split("tags:")[1].strip().split(",")
-            quotes = search_quotes_by_tags(tags)
-            table = PrettyTable(["Author", "Quote", "Tags"])
-            if quotes:
-                for quote in quotes:
-                    table.add_row(
-                        [quote.author.fullname, quote.quote, ", ".join(quote.tags)]
-                    )
-                print(table)
-            else:
-                print("Цитати для заданих тегів не знайдено.")
+            case cmd if cmd.startswith("tag:"):
+                tag = command.split("tag:")[1].strip()
+                quotes = search_quotes_by_tag(tag)
+                if quotes:
+                    table = build_table(quotes)
+                    print(table)
+                else:
+                    print("Цитати для заданого тегу не знайдено.")
 
-        elif command == "exit":
-            break
+            case cmd if cmd.startswith("tags:"):
+                tags = command.split("tags:")[1].strip().split(",")
+                quotes = search_quotes_by_tags(tags)
+                if quotes:
+                    table = build_table(quotes)
+                    print(table)
+                else:
+                    print("Цитати для заданих тегів не знайдено.")
 
-        else:
-            print("Невідома команда. Спробуйте ще раз.")
+            case "exit":
+                break
+
+            case _:
+                print("Невідома команда. Спробуйте ще раз.")
