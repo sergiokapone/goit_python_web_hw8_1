@@ -2,10 +2,12 @@ import time
 from functools import wraps
 from prettytable import PrettyTable
 from mongoengine import disconnect
+import redis
 
 from database.models import Authors, Quotes
 from database.connect import get_database
-import redis
+from redis.exceptions import ConnectionError
+
 from redis_lru import RedisLRU
 
 
@@ -13,24 +15,37 @@ client = redis.StrictRedis(host="localhost", port=6379, password=None)
 cache = RedisLRU(client)
 
 
+def cache_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        try:
+            decoration = cache(func)(*args, **kwargs)
+            return decoration
+        except ConnectionError:
+            print("Warning! Redis connection error.")
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def time_it(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
+
         start = time.time()
         results = func(*args, **kwargs)
         finish = time.time()
         Dt = finish - start
-        if Dt <= 0.001:
-            print("Data received from cache")
-        else:
-            print("Data received from database")
+        print(f"Data received at {Dt:.4f} sec.")
         return results
 
     return wrapper
 
 
 @time_it
-@cache
+@cache_decorator
 def search_quotes_by_author(author_name):
 
     try:
@@ -42,16 +57,18 @@ def search_quotes_by_author(author_name):
 
 
 @time_it
-@cache
+@cache_decorator
 def search_quotes_by_tag(tag):
-
-    quotes = Quotes.objects(tags__istartswith=tag)
-    return quotes
+    try:
+        quotes = Quotes.objects(tags__istartswith=tag)
+        return quotes
+    except Quotes.DoesNotExist:
+        return []
 
 
 def search_quotes_by_tags(tags):
-
-    quotes = Quotes.objects(tags__istartswith=tags)
+    tags_str = ",".join(tags)
+    quotes = Quotes.objects(tags__istartswith=tags_str)
     return quotes
 
 
@@ -120,7 +137,7 @@ if __name__ == "__main__":
                     print("Цитати для заданого тегу не знайдено.")
 
             case cmd if cmd.startswith("tags:"):
-                tags = command.split("tags:")[1].strip().split(",")
+                tags = cmd.split("tags:")[1].strip().split(",")
                 quotes = search_quotes_by_tags(tags)
                 if quotes:
                     table = build_table(quotes)

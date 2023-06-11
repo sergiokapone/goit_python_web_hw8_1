@@ -76,14 +76,26 @@ docker run --name redis-cache -d -p 6379:6379 redis
 
 [^4]: `LRU`, або `LRU cache` (Least Recently Used) - алгоритм для зберігання обмеженого обсягу даних: зі сховища витісняється інформація, яка не використовувалася найдовше. Його застосовують під час організації кешу.
 
-Програма вимірює час отримання даних. Якщо дані були отримані з бази даних, то виводиться відповідь:
+Для визначення, чи встановлене з'єднання з `Redis` було перевизначено стандартний декоратор `cache` на такий, що перевіряє стан цього з'єднання:
 
-```text
-Data received from database
+```python
+def cache_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        try:
+            decoration = cache(func)(*args, **kwargs)
+            return decoration
+        except ConnectionError:
+            print("Warning! Redis connection error.")
+
+        return func(*args, **kwargs)
+
+    return wrapper
 ```
 
-якщо з кешу, то
+У випадку, якщо сервер Redis не доступний, видається попередження
 
 ```text
-Data received from cache
+Warning! Redis connection error.
 ```
