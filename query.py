@@ -7,7 +7,6 @@ import redis
 from database.models import Authors, Quotes
 from database.connect import get_database
 
-
 from redis_lru import RedisLRU
 
 
@@ -72,6 +71,17 @@ def search_quotes_by_tags(tags):
     return quotes
 
 
+@time_it
+@cache_decorator
+def get_all_quotes():
+    try:
+        quotes = Quotes.objects()
+        return quotes
+    except Quotes.DoesNotExist:
+        return []
+
+
+
 def get_author_names():
 
     authors = Authors.objects()
@@ -117,6 +127,11 @@ if __name__ == "__main__":
                 print("Список всіх тегів:")
                 for i, tag in enumerate(tags):
                     print(f"{i+1}. {tag}")
+
+            case "quotes":
+                quotes = get_all_quotes()
+                table = build_table(quotes)
+                print(table)
 
             case cmd if cmd.startswith("name:"):
                 author_name = command.split("name:")[1].strip()
