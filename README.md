@@ -86,7 +86,7 @@ def cache_decorator(func):
         try:
             decoration = cache(func)(*args, **kwargs)
             return decoration
-        except ConnectionError:
+        except redis.exceptions.ConnectionError:
             print("Warning! Redis connection error.")
 
         return func(*args, **kwargs)
