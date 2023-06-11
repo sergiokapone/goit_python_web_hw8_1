@@ -99,6 +99,7 @@ def build_table(quotes):
     table = PrettyTable(["Author", "Quote", "Tags"])
     table._max_width = {"Quote": 40}
     table.align["Quote"] = "l"
+    table.hrules = 1
 
     for quote in quotes:
         table.add_row([quote.author.fullname, quote.quote, ", ".join(quote.tags)])
