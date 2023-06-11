@@ -6,7 +6,7 @@ import redis
 
 from database.models import Authors, Quotes
 from database.connect import get_database
-from redis.exceptions import ConnectionError
+
 
 from redis_lru import RedisLRU
 
@@ -22,7 +22,7 @@ def cache_decorator(func):
         try:
             decoration = cache(func)(*args, **kwargs)
             return decoration
-        except ConnectionError:
+        except redis.exceptions.ConnectionError:
             print("Warning! Redis connection error.")
 
         return func(*args, **kwargs)
