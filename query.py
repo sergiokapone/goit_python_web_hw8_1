@@ -1,10 +1,12 @@
+import time
+from functools import wraps
 from prettytable import PrettyTable
+from mongoengine import disconnect
+
 from database.models import Authors, Quotes
 from database.connect import get_database
 import redis
 from redis_lru import RedisLRU
-from functools import wraps
-import time
 
 
 client = redis.StrictRedis(host="localhost", port=6379, password=None)
@@ -30,7 +32,6 @@ def time_it(func):
 @time_it
 @cache
 def search_quotes_by_author(author_name):
-    get_database()
 
     try:
         author = Authors.objects.get(fullname__istartswith=author_name)
@@ -43,21 +44,18 @@ def search_quotes_by_author(author_name):
 @time_it
 @cache
 def search_quotes_by_tag(tag):
-    get_database()
 
     quotes = Quotes.objects(tags__istartswith=tag)
     return quotes
 
 
 def search_quotes_by_tags(tags):
-    get_database()
 
     quotes = Quotes.objects(tags__istartswith=tags)
     return quotes
 
 
 def get_author_names():
-    get_database()
 
     authors = Authors.objects()
     author_names = [author.fullname for author in authors]
@@ -65,7 +63,6 @@ def get_author_names():
 
 
 def get_all_tags():
-    get_database()
 
     tags = Quotes.objects.distinct("tags")
     return tags
@@ -82,6 +79,7 @@ def build_table(quotes):
 
 
 if __name__ == "__main__":
+
     get_database()
 
     while True:
@@ -131,6 +129,7 @@ if __name__ == "__main__":
                     print("Цитати для заданих тегів не знайдено.")
 
             case "exit":
+                disconnect()
                 break
 
             case _:

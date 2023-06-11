@@ -1,7 +1,7 @@
 import json
-from database.models import Authors, Quotes
 from database.connect import get_database
-from mongoengine import MultipleObjectsReturned
+from database.models import Authors, Quotes
+from mongoengine import MultipleObjectsReturned, disconnect
 
 
 def load_data_from_json(json_file):
@@ -11,7 +11,6 @@ def load_data_from_json(json_file):
 
 
 def save_authors_to_database(authors):
-    get_database()
 
     # Deleting the Authors collection before adding
     Authors.objects().delete()
@@ -26,7 +25,6 @@ def save_authors_to_database(authors):
 
 
 def save_quotes_to_database(quotes):
-    get_database()
 
     # Deleting the Quotes collection before adding
     Quotes.objects().delete()
@@ -41,6 +39,7 @@ def save_quotes_to_database(quotes):
 
 
 if __name__ == "__main__":
+    get_database()
     authors_json_file = "authors.json"
     quotes_json_file = "quotes.json"
 
@@ -49,3 +48,4 @@ if __name__ == "__main__":
 
     save_authors_to_database(authors_data)
     save_quotes_to_database(quotes_data)
+    disconnect()
