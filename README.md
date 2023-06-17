@@ -1,4 +1,4 @@
-# Домашнє завдання #8 (перша частина)
+# Домашнє завдання #8 (перша частина) <img align="right" width="32px" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"/> <img align="right" width="32px" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg"/>
 
 Робота з базою [`MongoDB`](https://www.mongodb.com/)[^1] за допомогою [`ODM MongoEngine`](https://docs.mongoengine.org/)[^2] та реалізація кешування за допомогою [`Redis`](https://redis.io/)[^3].
 
